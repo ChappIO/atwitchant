@@ -7,12 +7,6 @@ import (
 	"net/url"
 )
 
-const clientId = "tkro9r2rqee1s95hhyecyfq979lky7"
-
-type Integration struct {
-	token string
-}
-
 func (t *Integration) Authorize() http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		switch request.Method {
@@ -43,7 +37,7 @@ func (t *Integration) Authorize() http.Handler {
 				})
 			} else {
 				log.Println("we already have a token")
-				writer.WriteHeader(http.StatusOK)
+				_ = json.NewEncoder(writer).Encode(t.user)
 			}
 			break
 		case "POST":
@@ -52,9 +46,11 @@ func (t *Integration) Authorize() http.Handler {
 			// thank you for your token sir!
 			target := make(map[string]string)
 			_ = json.NewDecoder(request.Body).Decode(&target)
-			if value, ok := target["token"]; ok && value != "" {
+			if token, ok := target["token"]; ok && token != "" {
 				log.Println("received a token from client!")
-				t.token = value
+				t.token = token
+				t.user = t.GetUser()
+				_ = json.NewEncoder(writer).Encode(t.user)
 			} else {
 				log.Println("we seem to be missing the token... :(")
 			}
@@ -65,3 +61,4 @@ func (t *Integration) Authorize() http.Handler {
 		}
 	})
 }
+

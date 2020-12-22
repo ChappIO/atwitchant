@@ -7,9 +7,9 @@
     let token = '';
 
     onMount(async () => {
-        await requireTwitchLogin();
+        const user = await requireTwitchLogin();
         loading = false;
-        token = 'Logged in';
+        token = user.display_name;
     })
 </script>
 

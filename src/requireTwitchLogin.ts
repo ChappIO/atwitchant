@@ -15,10 +15,10 @@ export async function requireTwitchLogin() {
         window.location.hash = '';
     } else {
         const response = await fetch('/auth/twitch');
+        const body = await response.json();
 
         switch (response.status) {
             case 404:
-                const body = await response.json();
                 // we don't have a status code just yet...
                 window.location.assign(body.redirectUri);
                 break;
@@ -26,5 +26,6 @@ export async function requireTwitchLogin() {
                 // the user has already logged in :D
                 break;
         }
+        return body;
     }
 }
