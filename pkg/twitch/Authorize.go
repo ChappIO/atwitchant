@@ -50,7 +50,14 @@ func (t *Integration) Authorize() http.Handler {
 				log.Println("received a token from client!")
 				t.token = token
 				t.user = t.GetUser()
-				_ = json.NewEncoder(writer).Encode(t.user)
+				t.chat = &Chat{
+					api:  t,
+				}
+				if err := t.chat.Reconnect(); err != nil {
+					writer.WriteHeader(http.StatusInternalServerError)
+				} else {
+					_ = json.NewEncoder(writer).Encode(t.user)
+				}
 			} else {
 				log.Println("we seem to be missing the token... :(")
 			}
