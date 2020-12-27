@@ -1,19 +1,19 @@
 package twitch
 
 import (
+	"bufio"
 	"crypto/tls"
 	"fmt"
 	"io"
 	"log"
 	"net"
-	"os"
 	"sync"
 )
 
 type Chat struct {
 	api  *Integration
 	conn io.ReadWriteCloser
-	mux sync.Mutex
+	mux  sync.Mutex
 }
 
 func (c *Chat) Reconnect() (err error) {
@@ -34,10 +34,12 @@ func (c *Chat) Reconnect() (err error) {
 		ServerName: "irc.chat.twitch.tv",
 	})
 	go func() {
-		c, err := io.Copy(os.Stdout, c.conn)
-		log.Printf("%d", c)
-		if err != nil {
-			panic(err)
+		scanner := bufio.NewScanner(c.conn)
+		for scanner.Scan() {
+			line := scanner.Text()
+			log.Printf("RECEIVE: %s", line)
+			message := messageFromLine(line)
+			log.Printf("%v", message)
 		}
 	}()
 	c.Write("PASS oauth:%s", c.api.token)
