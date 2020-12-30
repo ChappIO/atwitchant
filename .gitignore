@@ -3,4 +3,4 @@ node_modules/
 build/
 
 # Test Project
-twitch.json
+/*.json

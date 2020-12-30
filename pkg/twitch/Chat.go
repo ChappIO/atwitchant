@@ -9,6 +9,7 @@ import (
 	"net"
 	"strings"
 	"sync"
+	"time"
 )
 
 type Chat struct {
@@ -46,29 +47,32 @@ func (c *Chat) Reconnect() error {
 	if err := c.recreateSocket(); err != nil {
 		return err
 	}
-	go func() {
-		scanner := bufio.NewScanner(c.conn)
+
+	scanner := bufio.NewScanner(c.conn)
+	c.Write("PASS oauth:%s", c.api.Token)
+	c.Write("NICK %s", c.api.User.Login)
+	time.Sleep(1 * time.Second)
+	c.Write("USER %s 0 * %s", c.api.User.Login, c.api.User.Login)
+	c.Write("JOIN #%s", c.api.User.Login)
+	c.Write("CAP REQ :twitch.tv/tags")
+	c.Write("CAP REQ :twitch.tv/membership")
+	c.Write("CAP REQ :twitch.tv/commands")
+
+	go func(scanner *bufio.Scanner) {
 		for scanner.Scan() {
 			line := scanner.Text()
+			log.Printf("RECEIVE: %s", line)
 			message := messageFromLine(line)
 			switch strings.ToUpper(message.Command) {
 			case CommandPing:
 				c.Write(strings.Replace(line, "PING", "PONG", 1))
 				break
 			default:
-				log.Printf("RECEIVE: %s", line)
 				c.emitMessage(message)
-
+				break
 			}
 		}
-	}()
-	c.Write("PASS oauth:%s", c.api.Token)
-	c.Write("NICK %s", c.api.User.Login)
-	c.Write("USER %s 0 * %s", c.api.User.Login, c.api.User.Login)
-	c.Write("JOIN #%s", c.api.User.Login)
-	c.Write("CAP REQ :twitch.tv/tags")
-	c.Write("CAP REQ :twitch.tv/membership")
-	c.Write("CAP REQ :twitch.tv/commands")
+	}(scanner)
 
 	log.Println("connected")
 	return nil
@@ -97,7 +101,7 @@ func (c *Chat) Write(format string, params ...interface{}) {
 	defer c.mux.Unlock()
 
 	command := fmt.Sprintf(format, params...)
-	log.Printf("SEND   : %s", command)
+	log.Printf("SEND   : %s", strings.ReplaceAll(command, c.api.Token, "[REDACTED]"))
 	_, err := c.conn.Write([]byte(command + "\n"))
 	if err != nil {
 		log.Printf("Failed to send command [%s]: %s", command, err)
@@ -112,7 +116,7 @@ func (c *Chat) emitMessage(message ChatMessage) {
 	}
 	if handlers, ok := c.handlers[strings.ToUpper(message.Command)]; ok {
 		for _, handler := range handlers {
-			handler(message)
+			go handler(message)
 		}
 	}
 }

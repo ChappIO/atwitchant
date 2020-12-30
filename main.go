@@ -27,8 +27,8 @@ func main() {
 	flag.Parse()
 
 	if printHelp {
-		log.Print("\n" + selectedCommand.Description + "\n\nflags:")
-		flag.PrintDefaults()
+		log.Print("\n" + selectedCommand.Description + "\n\n")
+		flag.Usage()
 		return
 	}
 
