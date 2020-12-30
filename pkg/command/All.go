@@ -8,6 +8,7 @@ import (
 
 var All = []*Command{
 	Login,
+	Chat,
 }
 
 func GetCommand(name string) *Command {

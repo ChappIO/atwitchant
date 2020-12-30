@@ -21,7 +21,9 @@ func main() {
 	}
 
 	flag.BoolVar(&printHelp, "help", false, "print this message")
-	selectedCommand.Flags()
+	if selectedCommand.Flags != nil {
+		selectedCommand.Flags()
+	}
 	flag.Parse()
 
 	if printHelp {

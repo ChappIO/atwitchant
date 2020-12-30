@@ -14,6 +14,9 @@ type ChatMessage struct {
 	Context context.Context
 }
 
+const CommandPrivMsg = "PRIVMSG"
+const CommandPing = "PING"
+
 func messageFromLine(line string) (out ChatMessage) {
 	remaining := line
 

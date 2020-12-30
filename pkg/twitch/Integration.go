@@ -13,7 +13,7 @@ const twitchLoginFile = "twitch.json"
 type Integration struct {
 	Token string   `json:"token"`
 	User  UserData `json:"user_details"`
-	chat  *Chat
+	Chat  *Chat    `json:"-"`
 }
 
 func (t *Integration) Connect() error {
@@ -22,10 +22,10 @@ func (t *Integration) Connect() error {
 	} else {
 		t.User = usr
 	}
-	t.chat = &Chat{
+	t.Chat = &Chat{
 		api: t,
 	}
-	if err := t.chat.Reconnect(); err != nil {
+	if err := t.Chat.Reconnect(); err != nil {
 		return err
 	}
 	return nil
@@ -48,7 +48,9 @@ func LoadTwitch() Integration {
 		panic(err)
 	}
 	if out.Token != "" {
-		out.Connect()
+		if err := out.Connect(); err != nil {
+			panic(err)
+		}
 	}
 	return out
 }
