@@ -1,6 +1,9 @@
 package config
 
-import "regexp"
+import (
+	"atwitchant/pkg/twitch"
+	"regexp"
+)
 
 type Regexp struct {
 	regexp.Regexp
@@ -32,4 +35,15 @@ type Trigger struct {
 	Comment string `json:"_comment,omitempty"`
 	Match   Match  `json:"match"`
 	Action  string `json:"action"`
+}
+
+func (t *Trigger) Check(message *twitch.ChatMessage) int {
+	matchPosition := -1
+	if t.Match.Message != nil {
+		match := t.Match.Message.FindStringIndex(message.Body)
+		if len(match) > 1 {
+			return match[0]
+		}
+	}
+	return matchPosition
 }
