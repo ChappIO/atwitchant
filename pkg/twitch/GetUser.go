@@ -1,9 +1,5 @@
 package twitch
 
-import (
-	"encoding/json"
-)
-
 type UserData struct {
 	Id              string `json:"id"`
 	Login           string `json:"login"`
@@ -14,17 +10,6 @@ type UserData struct {
 
 type getUserResponse struct {
 	Data []UserData `json:"data"`
-}
-
-func (t *Integration) httpGet(url string, target interface{}) error {
-	data, err := t.cache.Get(t.Token, url)
-	if err != nil {
-		return err
-	}
-	if err := json.Unmarshal(data, target); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (t *Integration) GetUser() (UserData, error) {

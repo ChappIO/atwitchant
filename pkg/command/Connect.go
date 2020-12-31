@@ -80,10 +80,10 @@ func handleMessage(profileData *config.Profile, api *twitch.Integration) func(ms
 		})
 
 		if len(matches) > 0 {
-			log.Printf("%s said: %s", msg.User.DisplayName, msg.Body)
+			log.Printf("%s said: %s", msg.Sender, msg.Body)
 		}
 		for _, match := range matches {
-			log.Printf("%s trigged action %s", msg.User.DisplayName, match.Action)
+			log.Printf("%s trigged action %s", msg.Sender, match.Action)
 			if action, ok := profileData.Actions[match.Action]; !ok {
 				log.Printf("%s does not exist", match.Action)
 			} else {
@@ -106,9 +106,19 @@ func runSendMessage(api *twitch.Integration, action *config.SendMessageAction, m
 		log.Printf("error: failed to compile template: %s", err)
 		return
 	}
-	err = tmpl.Execute(&tpl, map[string]interface{}{
+	context := map[string]interface{}{
 		"Message": msg,
-	})
+	}
+	if stream, err := api.GetStream(); err == nil {
+		context["Stream"] = stream
+	}
+	if msg.SenderID != "" {
+		if user, err := api.GetUserById(msg.SenderID); err == nil {
+			context["Sender"] = user
+		}
+	}
+
+	err = tmpl.Execute(&tpl, context)
 	if err != nil {
 		log.Printf("error: failed to compile message: %s", err)
 		return

@@ -12,7 +12,6 @@ type ChatMessage struct {
 	SenderID string
 	Channel  string
 	Body     string
-	User     UserData
 	Context  context.Context
 }
 

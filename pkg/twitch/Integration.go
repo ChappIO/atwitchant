@@ -86,3 +86,14 @@ func AuthorizeUrl(loginUri string) string {
 	}
 	return redirectUri.String()
 }
+
+func (t *Integration) httpGet(url string, target interface{}) error {
+	data, err := t.cache.Get(t.Token, url)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(data, target); err != nil {
+		return err
+	}
+	return nil
+}

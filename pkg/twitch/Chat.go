@@ -67,10 +67,6 @@ func (c *Chat) Reconnect() error {
 			case CommandPing:
 				c.Write(strings.Replace(line, "PING", "PONG", 1))
 				break
-			case CommandPrivMsg:
-				enhanceMessage(c.api, &message)
-				c.emitMessage(message)
-				break
 			default:
 				c.emitMessage(message)
 				break
@@ -80,17 +76,6 @@ func (c *Chat) Reconnect() error {
 
 	log.Println("connected")
 	return nil
-}
-
-func enhanceMessage(api *Integration, c *ChatMessage) {
-	if c.SenderID != "" {
-		user, err := api.GetUserById(c.SenderID)
-		if err != nil {
-			log.Printf("could not fetch user info: %s", err)
-		} else {
-			c.User = user
-		}
-	}
 }
 
 func (c *Chat) OnMessage(command string, handler func(msg ChatMessage)) {
