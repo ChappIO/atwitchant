@@ -30,7 +30,7 @@ var New = &Command{
 				"hello": {
 					Comment: "Send a greeting message. You can use expressions in here.",
 					SendMessage: &config.SendMessageAction{
-						Template: "Hey {{ index .msg.Tags \"display-name\" }}",
+						Template: "Hey {{ .Message.DisplayName }}",
 					},
 				},
 			},

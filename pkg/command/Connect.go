@@ -53,42 +53,44 @@ var Connect = &Command{
 			os.Exit(1)
 			return
 		}
-
-		api.Chat.OnMessage(twitch.CommandPrivMsg, func(msg twitch.ChatMessage) {
-			var matches []messageMatch
-
-			for _, trigger := range profileData.Triggers {
-				score := trigger.Check(&msg)
-				if score >= 0 {
-					matches = append(matches, messageMatch{
-						Score:  score,
-						Action: trigger.Action,
-					})
-				}
-			}
-
-			sort.Slice(matches, func(i, j int) bool {
-				return matches[i].Score < matches[j].Score
-			})
-
-			if len(matches) > 0 {
-				log.Printf("%s said: %s", msg.DisplayName, msg.Body)
-			}
-			for _, match := range matches {
-				log.Printf("%s trigged action %s", msg.DisplayName, match.Action)
-				if action, ok := profileData.Actions[match.Action]; !ok {
-					log.Printf("%s does not exist", match.Action)
-				} else {
-					runAction(&api, &action, &msg)
-				}
-			}
-		})
-
+		api.Chat.OnMessage(twitch.CommandPrivMsg, handleMessage(&profileData, &api))
 		// wait for kill signal
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
 		<-c
 	},
+}
+
+func handleMessage(profileData *config.Profile, api *twitch.Integration) func(msg twitch.ChatMessage) {
+	return func(msg twitch.ChatMessage) {
+		var matches []messageMatch
+
+		for _, trigger := range profileData.Triggers {
+			score := trigger.Check(&msg)
+			if score >= 0 {
+				matches = append(matches, messageMatch{
+					Score:  score,
+					Action: trigger.Action,
+				})
+			}
+		}
+
+		sort.Slice(matches, func(i, j int) bool {
+			return matches[i].Score < matches[j].Score
+		})
+
+		if len(matches) > 0 {
+			log.Printf("%s said: %s", msg.DisplayName, msg.Body)
+		}
+		for _, match := range matches {
+			log.Printf("%s trigged action %s", msg.DisplayName, match.Action)
+			if action, ok := profileData.Actions[match.Action]; !ok {
+				log.Printf("%s does not exist", match.Action)
+			} else {
+				runAction(api, &action, &msg)
+			}
+		}
+	}
 }
 
 func runAction(api *twitch.Integration, action *config.Action, msg *twitch.ChatMessage) {
@@ -105,7 +107,7 @@ func runSendMessage(api *twitch.Integration, action *config.SendMessageAction, m
 		return
 	}
 	err = tmpl.Execute(&tpl, map[string]interface{}{
-		"msg": msg,
+		"Message": msg,
 	})
 	if err != nil {
 		log.Printf("error: failed to compile message: %s", err)
