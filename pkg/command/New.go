@@ -15,16 +15,26 @@ var New = &Command{
 		flag.StringVar(&profile, "profile", "default.json", "the path to the profile configuration")
 	},
 	Run: func() {
-		profileData := config.Profile{Triggers: map[string]config.Trigger{
-			"ping_command": {
-				Comment: "This is just an example trigger which gets fired when a viewer sends '!ping'",
-				Match:   config.Match{
-					Comment: "When the message is '!ping'",
-					Message: config.MustCompile("^!ping$"),
+		profileData := config.Profile{
+			Triggers: map[string]config.Trigger{
+				"hello_command": {
+					Comment: "This is just an example trigger which gets fired when a viewer sends '!hello'",
+					Match: config.Match{
+						Comment: "When the message is '!hello'",
+						Message: config.MustCompile("^!hello$"),
+					},
+					Action: "hello",
 				},
-				Action: "",
 			},
-		}}
+			Actions: map[string]config.Action{
+				"hello": {
+					Comment: "Send a greeting message. You can use expressions in here.",
+					SendMessage: &config.SendMessageAction{
+						Template: "Hey {{ index .msg.Tags \"display-name\" }}",
+					},
+				},
+			},
+		}
 		file, err := os.Create(profile)
 		if err != nil {
 			panic(err)
@@ -32,7 +42,7 @@ var New = &Command{
 		defer file.Close()
 		enc := json.NewEncoder(file)
 		enc.SetIndent("", "  ")
-		enc.Encode(&profileData)
+		_ = enc.Encode(&profileData)
 		log.Printf("saved new profile to '%s'", profile)
 	},
 }

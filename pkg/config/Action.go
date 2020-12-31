@@ -5,5 +5,6 @@ type SendMessageAction struct {
 }
 
 type Action struct {
+	Comment     string             `json:"_comment,omitempty"`
 	SendMessage *SendMessageAction `json:"send_message,omitempty"`
 }

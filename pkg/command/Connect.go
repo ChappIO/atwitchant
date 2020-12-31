@@ -47,8 +47,6 @@ var Connect = &Command{
 		loadProfile(&profileData, "common.json")
 		loadProfile(&profileData, profile)
 
-		log.Printf("%+v", profileData)
-
 		api := twitch.LoadTwitch()
 		if api.Token == "" {
 			log.Println("Run the login command first")
@@ -57,7 +55,7 @@ var Connect = &Command{
 		}
 
 		api.Chat.OnMessage(twitch.CommandPrivMsg, func(msg twitch.ChatMessage) {
-			matches := []messageMatch{}
+			var matches []messageMatch
 
 			for _, trigger := range profileData.Triggers {
 				score := trigger.Check(&msg)
@@ -73,12 +71,11 @@ var Connect = &Command{
 				return matches[i].Score < matches[j].Score
 			})
 
-			sender := msg.Tags["display-name"]
 			if len(matches) > 0 {
-				log.Printf("%s said: %s", sender, msg.Body)
+				log.Printf("%s said: %s", msg.DisplayName, msg.Body)
 			}
 			for _, match := range matches {
-				log.Printf("%s trigged action %s", sender, match.Action)
+				log.Printf("%s trigged action %s", msg.DisplayName, match.Action)
 				if action, ok := profileData.Actions[match.Action]; !ok {
 					log.Printf("%s does not exist", match.Action)
 				} else {
