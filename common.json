@@ -1,19 +1,6 @@
 {
   "triggers": {
-    "ping_command": {
-      "_comment": "This is just an example trigger which gets fired when a viewer sends '!ping'",
-      "match": {
-        "_comment": "When the message starts with '!ping'",
-        "msg": "^!ping$"
-      },
-      "action": "ping"
-    }
   },
   "actions": {
-    "ping": {
-      "send_message": {
-        "template": "Hey {{ index .msg.Tags \"display-name\" }}"
-      }
-    }
   }
 }

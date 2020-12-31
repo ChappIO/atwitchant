@@ -2,7 +2,6 @@ package twitch
 
 import (
 	"encoding/json"
-	"net/http"
 )
 
 type UserData struct {
@@ -17,20 +16,30 @@ type getUserResponse struct {
 	Data []UserData `json:"data"`
 }
 
+func (t *Integration) httpGet(url string, target interface{}) error {
+	data, err := t.cache.Get(t.Token, url)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(data, target); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (t *Integration) GetUser() (UserData, error) {
-	req, _ := http.NewRequest(
-		"GET",
-		"https://api.twitch.tv/helix/users",
-		nil,
-	)
-	req.Header.Set("Authorization", "Bearer "+t.Token)
-	req.Header.Set("Client-Id", clientId)
-	res, err := http.DefaultClient.Do(req)
+	response := getUserResponse{}
+	err := t.httpGet("https://api.twitch.tv/helix/users", &response)
 	if err != nil {
 		return UserData{}, err
 	}
+	return response.Data[0], nil
+}
+
+func (t *Integration) GetUserById(id string) (UserData, error) {
 	response := getUserResponse{}
-	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+	err := t.httpGet("https://api.twitch.tv/helix/users?id="+id, &response)
+	if err != nil {
 		return UserData{}, err
 	}
 	return response.Data[0], nil

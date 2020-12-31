@@ -80,10 +80,10 @@ func handleMessage(profileData *config.Profile, api *twitch.Integration) func(ms
 		})
 
 		if len(matches) > 0 {
-			log.Printf("%s said: %s", msg.DisplayName, msg.Body)
+			log.Printf("%s said: %s", msg.User.DisplayName, msg.Body)
 		}
 		for _, match := range matches {
-			log.Printf("%s trigged action %s", msg.DisplayName, match.Action)
+			log.Printf("%s trigged action %s", msg.User.DisplayName, match.Action)
 			if action, ok := profileData.Actions[match.Action]; !ok {
 				log.Printf("%s does not exist", match.Action)
 			} else {

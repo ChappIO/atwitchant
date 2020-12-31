@@ -14,9 +14,13 @@ type Integration struct {
 	Token string   `json:"token"`
 	User  UserData `json:"user_details"`
 	Chat  *Chat    `json:"-"`
+	cache cache
 }
 
 func (t *Integration) Connect() error {
+	t.cache = cache{
+		Data: map[string]cacheItem{},
+	}
 	if usr, err := t.GetUser(); err != nil {
 		return nil
 	} else {

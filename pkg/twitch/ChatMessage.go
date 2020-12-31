@@ -6,14 +6,14 @@ import (
 )
 
 type ChatMessage struct {
-	Tags        map[string]string
-	Command     string
-	Sender      string
-	DisplayName string
-	SenderID    string
-	Channel     string
-	Body        string
-	Context     context.Context
+	Tags     map[string]string
+	Command  string
+	Sender   string
+	SenderID string
+	Channel  string
+	Body     string
+	User     UserData
+	Context  context.Context
 }
 
 const CommandPrivMsg = "PRIVMSG"
@@ -62,9 +62,6 @@ func messageFromLine(line string) (out ChatMessage) {
 	}
 
 	// twitch-specific parsing
-	if value, ok := out.Tags["display-name"]; ok {
-		out.DisplayName = value
-	}
 	if value, ok := out.Tags["user-id"]; ok {
 		out.SenderID = value
 	}
